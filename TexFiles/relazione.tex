@@ -78,7 +78,7 @@
 		\Divisione{Scuola di Ingegneria}
 		\Corso[Laurea Magistrale]{Ingegneria Informatica}
 		\Titolo{Laboratorio di Robotica}
-		\Sottotitolo{Relazione attività di laboratorio }
+		\Sottotitolo{Documentazione attività di laboratorio }
 		\Punteggiatura{}
 		\NRelatore{Prof.}{Prof.}
 		\Relatore{Davide Brugali}
@@ -116,23 +116,23 @@
 %	INTRO
 %----------------------------------------------------------------------------------------
 \chapter{Introduzione}
-Obiettivo progetto
-\\Due parole su stereo camera ZED
-
+L'obiettivo del nostro progetto è quello di fornire le coordinate e l'orientamento della pinza ad un robot, al fine di potersi posizionare per afferrare un oggetto. Le coordinate e l'orientamento vengono calcolate da un'opportuna libreria (nel nostro caso dalla libreria Grasp Pose Generator, GPG), la quale necessità delle informazioni dell'oggetto inquadrato sottoforma di una nuvola di punti, la point cloud, che verrà fornita attraverso la Stereo Camera ZED. \par
+La Stereo Camera ZED è dotata di vari sensori, per esempio l'accelereometro e il giroscopio, ma nella nostra applicazione serviranno solo i dati delle immagini, in particolare solo quelli della point cloud. \par
+Di seguito, nel capitolo \ref{librerie} verranno analizzate due diverse librerie che si possono utilizzare per ottenere i dati relativi alla posizione e all'orientamento della pinza del robot, mentre nel capitolo \ref{integrazione} verranno descritti i passi necessari per integrare, compilare ed eseguire il progetto. Infine, nel capitolo \ref{risultati}, verranno mostrati i risultati finali.
 \newpage
-\chapter{Librerie}
+\chapter{Librerie}\label{librerie}
 \section{GPG}
 \section{GPD}
 
 \newpage
-\chapter{Integrazione}
-\section{Component}
-acquisisce point cloud
+\chapter{Integrazione}\label{integrazione}
 \section{Plugin}
-\section{Conversione point cloud}
+acquisisce point cloud. Bisogna mettere anche l'ordine e i comandi per compilare ed eseguire.
+\section{Component}
+\section{Messages}
 
 \newpage
-\chapter{Risultati}
+\chapter{Risultati}\label{risultati}
 %----------------------------------------------------------------------------------------
 
 \end{document}

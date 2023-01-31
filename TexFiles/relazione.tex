@@ -127,44 +127,61 @@ stepnumber=2, numbersep=5pt, float=*, #1}}{}
 %----------------------------------------------------------------------------------------
 \chapter{Introduzione}
 L'obiettivo del nostro progetto è quello di fornire le coordinate e l'orientamento della pinza ad un robot, al fine di potersi posizionare per afferrare un oggetto. Le coordinate e l'orientamento vengono calcolate da un'opportuna libreria (nel nostro caso dalla libreria \textit{Grasp Pose Generator, GPG}), la quale necessità delle informazioni dell'oggetto inquadrato sottoforma di una nuvola di punti, la point cloud, che verrà fornita attraverso la \textit{Stereo Camera ZED}. Il software del progetto sarà realizzato utilizzando il \textit{Framework STAR}. \par
-La Stereo Camera ZED è dotata di vari sensori, per esempio l'accelereometro e il giroscopio, ma nella nostra applicazione serviranno solo i dati delle immagini, in particolare solo quelli della point cloud. La stereocamera ha un range di profondità compreso fra \SI{30}{c\meter} e \SI{20}{\meter} (fonte: \textcolor{blue}{\underline{\href{https://www.stereolabs.com/assets/datasheets/zed2-camera-datasheet.pdf}{datasheet}}}), perciò gli oggetti dovranno essere inquadrati ad una distanza compresa in questo intervallo. \par
+La Stereo Camera ZED è dotata di vari sensori, per esempio l'accelereometro e il giroscopio, ma nella nostra applicazione serviranno solo i dati delle immagini, in particolare solo quelli della point cloud. La fotocamera stereoscopica ha un range di profondità compreso fra \SI{30}{c\meter} e \SI{20}{\meter} (fonte: \textcolor{blue}{\underline{\href{https://www.stereolabs.com/assets/datasheets/zed2-camera-datasheet.pdf}{datasheet}}}), perciò gli oggetti dovranno essere inquadrati ad una distanza compresa in questo intervallo. \par
 Di seguito, nel capitolo \ref{librerie} verranno analizzate due diverse librerie che si possono utilizzare per ottenere i dati relativi alla posizione e all'orientamento della pinza del robot, mentre nel capitolo \ref{integrazione} verranno descritti i passi necessari per integrare, compilare ed eseguire il progetto. Infine, nel capitolo \ref{risultati}, verranno mostrati i risultati finali.
 \newpage
 \chapter{Librerie}\label{librerie}
-Prima di costruire l'applicazione finale, sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator}, GPG, la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detector}, GPD, la cui documentazione è invece disponibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}.\par
+Prima di costruire l'applicazione finale, sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator}, GPG, la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detector}, GPD, la cui documentazione è invece disponibile al seguente \texttt{\textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}}.\par
 \todo{Per entrambe, riportare i comandi di compilazione ed esecuzione per ottenere la versione stand alone. Mettere i link, spiegare GPG e per GPD descrivere solo le differenze con la libreria precedente. Sempre per entrambe, alla fine mettere un'immagine con la visualizzazione delle prese e delle info date dal terminale. }
 \section{Grasp Pose Generator, GPG}\label{GPG}
 \section{Grasp Pose Detector, GPD}\label{GPD}
 
 \newpage
 \chapter{Integrazione}\label{integrazione}
-In questo capitolo, verranno descritti i passi seguiti per ottenere l'applicazione finale.
+In questo capitolo, verranno descritti i passi seguiti per ottenere l'applicazione finale. Prima di utilizzare un nuovo terminale, è importante inizializzare le variabili d'ambiente di STAR. Per fare ciò, bisogna eseguire questi comandi nel terminale:
+\begin{verbatim}
+  cd STAR
+  cd AutonomousRobots
+  . env-star.sh
+\end{verbatim}
+A questo punto, si inserisce la password (che è \texttt{unibg}) ed il terminale è pronto per essere utilizzato. 
 \section{Library}
-Per prima cosa, andiamo a copiare e compilare la libreria GPG descritta nella sezione precedente nella cartella [guarda percorso] della cartella \textit{Library}. Per fare ciò eseguiamo i seguenti comandi in un terminale:
+Per prima cosa, andiamo a copiare e compilare la libreria GPG descritta nella sezione precedente nella sottocartella \texttt{others} della cartella \texttt{Libraries} di STAR. Per fare ciò eseguiamo i seguenti comandi in un terminale, dopo aver raggiunto la cartella \texttt{others}:
 \begin{verbatim}
-cd <location_of_your_workspace>
-cd grasp_candidates_generator
-mkdir build && cd build
-cmake ..
-make
-sudo make install
+  cd <location_of_your_workspace>  
+  cd grasp_candidates_generator
+  mkdir build && cd build
+  cmake ..
+  make
+  sudo make install
 \end{verbatim}
-Per eseguire la libreria, digitare il comando seguente all'interno della cartella \textit{build} e sostituire \textit{some\_cloud} con il nome del file contenente la point cloud:
+Per eseguire la libreria, digitare il comando seguente all'interno della cartella \texttt{build} e sostituire \texttt{some\_cloud} con il nome del file contenente la point cloud:
 \begin{verbatim}
-./generate_candidates ../cfg/params.cfg ~/gpg/some_cloud.pcd
+  ./generate_candidates ../cfg/params.cfg ~/gpg/tutorials/some_cloud.pcd
 \end{verbatim}
-La libreria appena importata funziona fornendogli in ingresso un file con estensione .pcd che contiene le informazioni sui punti della point cloud, però nel nostro caso la point cloud non sarà salvata su un file, ma verrà fornita dalla stereocamera. Modifichiamo quindi la libreria per fare in modo che riceva in ingresso non un file, ma una struttura dati denominata \textit{Cloudcamera} che contiene un puntatore alla struttura dati \textit{pcl::PointCloud$<$pcl::PointXYZRGBA$>$::Ptr}. Quest'ultima variabile è un vettore contenente dei punti nel formato XYZRGBA: ogni punto è caratterizzato da 4 campi, i primi tre (X, Y, e Z) sono di tipo double e contengono le informazioni relative alle coordinate di quel punto in metri, invece l'ultimo campo, RGBA, è un intero senza segno a 32 bit in cui si codifica l'informazione sul colore, ogni parametro del colore (R, G, B e A) è memorizzato in 8 bit, questo significa che ognuno di questi valori può variare da 0 a 255, perciò possono essere rappresentati fino a $\displaystyle{2^{32}=4.294.967.296}$ colori. Nello specifico, gli 8 bit meno significativi contengono l'informazione relativa al colore blu (B), i bit da 9 a 16 contengono l'informazione del colore verde (G), i bit da 17 a 24 codificano il valore del rosso (R), infine i bit da 25 a 32 contengono l'informazione del parametro alfa (A), che indica la trasparenza del colore. Nella nostra applicazione non utilizzeremo quest'informazione perché la point cloud è formata solo da punti di colore nero, che viene codificato dal valore più basso, ovvero 0. \par
-La seconda modifica che apportiamo riguarda il tipo restituito dalla funzione [copia nome], perché non sarà di tipo Grasppose ma void, il vettore Grasppose viene aggiornato passando alla funzione l'indirizzo della variabile da aggiornare. [da continuare]\par 
+La libreria appena importata funziona fornendogli in ingresso un file con estensione \texttt{.pcd} che contiene le informazioni sui punti della point cloud, però nel nostro caso la point cloud non sarà salvata su un file, ma verrà fornita dalla fotocamera stereoscopica. Modifichiamo quindi la libreria per fare in modo che riceva in ingresso non un file, ma una struttura dati denominata \texttt{Cloudcamera} che è un riferimento alla struttura dati \texttt{pcl::PointCloud$<$pcl::PointXYZRGBA$>$::Ptr}. Quest'ultima variabile è un vettore contenente dei punti nel formato XYZRGBA: ogni punto è caratterizzato da 4 campi, i primi tre (X, Y, e Z) sono di tipo double e contengono le informazioni relative alle coordinate di quel punto in metri, invece l'ultimo campo, RGBA, è un intero senza segno a 32 bit in cui si codifica l'informazione sul colore, ogni parametro del colore (R, G, B e A) è memorizzato in 8 bit, questo significa che ognuno di questi valori può variare da 0 a 255, perciò possono essere rappresentati fino a $\displaystyle{2^{32}=4.294.967.296}$ colori. Nello specifico, gli 8 bit meno significativi contengono l'informazione relativa al colore blu (B), i bit da 9 a 16 contengono l'informazione del colore verde (G), i bit da 17 a 24 codificano il valore del rosso (R), infine i bit da 25 a 32 contengono l'informazione del parametro alfa (A), che indica la trasparenza del colore. Nella nostra applicazione non utilizzeremo quest'informazione perché la point cloud è formata solo da punti di colore nero, che viene codificato dal valore più basso, ovvero 0. Per ottenere la modifica appena descritta, cambiamo il parametro della funzione \texttt{CandidatesGenerator::generateGraspCan-}\\\texttt{didates}, che non sarà più una stringa contenente il percorso del file, ma una varibalie di tipo \texttt{const CloudCamera\&}. \par
+La seconda modifica che apportiamo riguarda il tipo restituito dalla funzione \texttt{CandidatesGenerator-}\\\texttt{::generateGraspCandidates}, perché non sarà più di tipo \texttt{std::vector<Grasp>} ma \texttt{void}. Il vettore delle prese viene aggiornato passando alla funzione l'indirizzo della variabile da aggiornare, perciò la funzione di partenza avrà un parametro aggiuntivo. \par 
+A seguito di queste due modifiche, la segnatura della funzione \texttt{CandidatesGenerator::generate-}\\\texttt{GraspCandidates} è:
+\begin{verbatim}
+  void CandidatesGenerator::generateGraspCandidates(const CloudCamera&, std::vector-
+  <Grasp>&)
+\end{verbatim}
+e nel main modifichiamo la chiamata della funzione, creando anche una struttura dati di tipo \texttt{std::vec-}\\\texttt{tor<Grasp>} per memorizzare le prese valide:
+\begin{verbatim}
+  std::vector<Grasp> candidates;
+  candidates_generator.generateGraspCandidates(cloud_cam,candidates);
+\end{verbatim}
 Dopo aver modificato la libreria, è necessario ricompilarla andando ad eseguire l'ultimo comando della sequenza di compilazione illustrata in precedenza, che è: 
 \begin{verbatim}
-sudo make install
+  sudo make install
 \end{verbatim}
 È estremamente importante ripetere questo passaggio ogni volta che si desidera apportare delle modifiche alla libreria.
 \section{Plugin}
-nella sottocartella \textit{plugin} della cartella \textit{Functionality} di STAR. TODO \todo{sistemare dettagli importazione, come makefile, eliminazione main ecc...} \par
-mettere parametri file cfg che è utile conoscere (numsample e dim pinze)
+Dopo aver importato e modificato la libreria creiamo il plugin, che servirà per richiamare l'esecuzione della libreria all'interno di un'attività di STAR. \par
+nella sottocartella \texttt{plugin} della cartella \texttt{Functionality} di STAR. TODO \todo{sistemare dettagli importazione, come makefile, eliminazione main ecc...} \par
+mettere modifica file senza main, makefile, parametri file cfg che è utile conoscere (numsample e dim pinze)
 \section{Component}
-Abbiamo creato due diversi componenti, il componente che si occupa dell'utilizzo della libreria e della pubblicazione dei messaggi contenenti le informazioni sulla presa è \textit{ObjectDetection}, mentre il componente \textit{ImageVisualization} si limita a ricevere e stampare sul terminale il messaggio ricevuto dal primo componente.
+Abbiamo creato due diversi ATTIVITA' [sistema terminologia], il componente che si occupa dell'utilizzo della libreria e della pubblicazione dei messaggi contenenti le informazioni sulla presa è \texttt{ObjectDetection}, mentre il componente \texttt{ImageVisualization} si limita a ricevere e stampare sul terminale il messaggio ricevuto dal primo componente.
 \section{Messages}
 3 messaggi creati con vari campi.
 

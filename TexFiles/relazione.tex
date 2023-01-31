@@ -131,9 +131,10 @@ La Stereo Camera ZED è dotata di vari sensori, per esempio l'accelereometro e i
 Di seguito, nel capitolo \ref{librerie} verranno analizzate due diverse librerie che si possono utilizzare per ottenere i dati relativi alla posizione e all'orientamento della pinza del robot, mentre nel capitolo \ref{integrazione} verranno descritti i passi necessari per integrare, compilare ed eseguire il progetto. Infine, nel capitolo \ref{risultati}, verranno mostrati i risultati finali.
 \newpage
 \chapter{Librerie}\label{librerie}
-Prima di costruire l'applicazione finale, sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator}, GPG, la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detector}, GPD, la cui documentazione è invece disponibile al seguente \texttt{\textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}}.\par
+Prima di costruire l'applicazione finale, sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator}, GPG, la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detector}, GPD, la cui documentazione è invece disponibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}.\par
 \todo{Per entrambe, riportare i comandi di compilazione ed esecuzione per ottenere la versione stand alone. Mettere i link, spiegare GPG e per GPD descrivere solo le differenze con la libreria precedente. Sempre per entrambe, alla fine mettere un'immagine con la visualizzazione delle prese e delle info date dal terminale. }
 \section{Grasp Pose Generator, GPG}\label{GPG}
+librerie necessarie al funzionamento
 \section{Grasp Pose Detector, GPD}\label{GPD}
 
 \newpage
@@ -145,7 +146,7 @@ In questo capitolo, verranno descritti i passi seguiti per ottenere l'applicazio
   . env-star.sh
 \end{verbatim}
 A questo punto, si inserisce la password (che è \texttt{unibg}) ed il terminale è pronto per essere utilizzato. 
-\section{Library}
+\section{Libraries}
 Per prima cosa, andiamo a copiare e compilare la libreria GPG descritta nella sezione precedente nella sottocartella \texttt{others} della cartella \texttt{Libraries} di STAR. Per fare ciò eseguiamo i seguenti comandi in un terminale, dopo aver raggiunto la cartella \texttt{others}:
 \begin{verbatim}
   cd <location_of_your_workspace>  
@@ -176,11 +177,42 @@ Dopo aver modificato la libreria, è necessario ricompilarla andando ad eseguire
   sudo make install
 \end{verbatim}
 È estremamente importante ripetere questo passaggio ogni volta che si desidera apportare delle modifiche alla libreria.
-\section{Plugin}
-Dopo aver importato e modificato la libreria creiamo il plugin, che servirà per richiamare l'esecuzione della libreria all'interno di un'attività di STAR. \par
-nella sottocartella \texttt{plugin} della cartella \texttt{Functionality} di STAR. TODO \todo{sistemare dettagli importazione, come makefile, eliminazione main ecc...} \par
-mettere modifica file senza main, makefile, parametri file cfg che è utile conoscere (numsample e dim pinze)
-\section{Component}
+\section{Functionalities}
+Dopo aver importato e modificato la libreria GPG creiamo il plugin, che servirà per richiamare l'esecuzione della libreria all'interno di un'attività di STAR. Il plugin va creato nella sottocartella \texttt{plugin} della cartella \texttt{Functionalities} di STAR. \par
+Tutto quello che serve per creare e far funzionare il nostro plugin si trova nella cartella \texttt{arm\_grasp\_gcg}. Questa cartella contiene a sua volta altre tre cartelle (\texttt{cfg}, \texttt{lib} e \texttt{src}) e un \texttt{makefile}. La cartella \texttt{lib} contiene un file con estensione \texttt{.so} che corrisponde alla libreria dinamica che crea la libreria GPG, la cartella \texttt{cfg} contiene un file che riassume tutti i parametri configurabili della libreria GPG in formato XML, infine la cartella \texttt{src} contiene il file che permette di esportare in STAR la libreria GPG come plugin. \par
+Quest'ultimo file, \texttt{PluginArmGraspGCG.cpp} è stato ottenuto copiando e modificando il file della libreria GPG che contiene il metodo \texttt{main} (ovvero \texttt{generate\_candidates.cpp}). Per prima cosa, la funzione \texttt{main} è stata tolta e trasformata in una normale funzione, all'inizio del file si registrano tutti i parametri di configurazione che successivamente vengono inizializzati ed infine si esporta il plugin aggiungendo le seguenti istruzioni: 
+\begin{verbatim}
+  extern "C" BOOST_SYMBOL_EXPORT PluginArmGraspGCG arm_grasp_gcg;
+  PluginArmGraspGCG arm_grasp_gcg;
+\end{verbatim}
+\indent Successivamente, si crea il \texttt{makefile} che contiene le istruzioni per compilare questo plugin. Le prime istruzioni riguardano il nome della libreria e il file in cui viene richiamata:
+\begin{verbatim}
+  LIB_NAME       = arm_grasp_gcg
+  LIB_SRC        = PluginArmGraspGCG.cpp
+\end{verbatim} 
+Successivamente, vanno specificati i nomi ed i percorsi delle librerie necessarie affinché il plugin funzioni correttamente. Le dipendenze sono quelle indicate nella sezione \ref{GPG}, perciò specifichiamo il percorso delle librerie \textit{Eigen, OpenCV, VTK} e \textit{PCL}. \par
+Per quanto riguarda il file di configurazione (\texttt{arm\_grasp\_gcg.cfg}), i parametri di nostro interesse sono:
+\begin{itemize}
+\item \texttt{finger\_width}: spessore delle dita della pinza utilizzata;
+\item \texttt{hand\_outer\_diameter}: diametro della pinza, calcolato come somma fra la massima apertura della pinza e due volte lo spessore delle dita;
+\item \texttt{hand\_depth}: lunghezza delle dita della pinza;
+\item \texttt{hand\_height}: spessore (inteso come profondità) della pinza;
+\item \texttt{voxelize}: variabile booleana, è \texttt{true} se si vuole che i punti della point cloud vengano voxelizati al fine di ridurne il numero, vale \texttt{false} altrimenti;
+\item \texttt{remove\_outliers}: variabile booleana utilizzata per indicare se si vogliono tenere tutti i valori (in questo caso il suo valore è \texttt{false}) oppure se si voglio scartare quelli statisticamente lontani, al fine di ridurre il rumore della point cloud (in quest'altro caso il valore della variabile è \texttt{false});
+\item \texttt{num\_samples}: numero di campioni, ovvero di prese, che si vogliono tenere in considerazione. Nel caso in cui si è interessati ad una sola prese il suo valore è 1, altrimenti è un intero maggiore.
+\end{itemize}
+Infine, va creata un'interfaccia all'interno della cartella \texttt{Functionalities} in cui richiamiamo la funzione della libreria. Quest'interfaccia va creata nel percorso \texttt{Functionalities/interfaces/star/robo-}\\\texttt{tics/functionality}, contiene gli \texttt{include} necessari e una funzione virtuale che richiama la libreria. La sua segnatura è la seguente:
+\begin{verbatim}
+  virtual void generateGraspCandidates(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud-
+  Prova, std::vector<Grasp>\& prese) = 0;}
+\end{verbatim} 
+Dopo aver costruito il plugin, è necessario compilarlo, eseguento le seguenti istruzioni:
+\begin{verbatim}
+  cd STAR/AutonomousRobots/Functionalities/plugin/ arm_grasp_gcg
+  make
+\end{verbatim} 
+Il plugin va ricompilato ogni volta che viene modificato. 
+\section{Components}
 Abbiamo creato due diversi ATTIVITA' [sistema terminologia], il componente che si occupa dell'utilizzo della libreria e della pubblicazione dei messaggi contenenti le informazioni sulla presa è \texttt{ObjectDetection}, mentre il componente \texttt{ImageVisualization} si limita a ricevere e stampare sul terminale il messaggio ricevuto dal primo componente.
 \section{Messages}
 3 messaggi creati con vari campi.

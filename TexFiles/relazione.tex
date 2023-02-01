@@ -126,20 +126,64 @@ stepnumber=2, numbersep=5pt, float=*, #1}}{}
 %	INTRO
 %----------------------------------------------------------------------------------------
 \chapter{Introduzione}
-L'obiettivo del nostro progetto è quello di fornire le coordinate e l'orientamento della pinza ad un robot, al fine di potersi posizionare per afferrare un oggetto. Le coordinate e l'orientamento vengono calcolate da un'opportuna libreria (nel nostro caso dalla libreria \textit{Grasp Pose Generator, GPG}), la quale necessità delle informazioni dell'oggetto inquadrato sottoforma di una nuvola di punti, la point cloud, che verrà fornita attraverso la \textit{Stereo Camera ZED}. Il software del progetto sarà realizzato utilizzando il \textit{Framework STAR}. \par
-La Stereo Camera ZED è dotata di vari sensori, per esempio l'accelereometro e il giroscopio, ma nella nostra applicazione serviranno solo i dati delle immagini, in particolare solo quelli della point cloud. La fotocamera stereoscopica ha un range di profondità compreso fra \SI{30}{c\meter} e \SI{20}{\meter} (fonte: \textcolor{blue}{\underline{\href{https://www.stereolabs.com/assets/datasheets/zed2-camera-datasheet.pdf}{datasheet}}}), perciò gli oggetti dovranno essere inquadrati ad una distanza compresa in questo intervallo. \par
-Di seguito, nel capitolo \ref{librerie} verranno analizzate due diverse librerie che si possono utilizzare per ottenere i dati relativi alla posizione e all'orientamento della pinza del robot, mentre nel capitolo \ref{integrazione} verranno descritti i passi necessari per integrare, compilare ed eseguire il progetto. Infine, nel capitolo \ref{risultati}, verranno mostrati i risultati finali.
+L'obiettivo del nostro progetto è quello di fornire le coordinate e l'orientamento della pinza ad un robot, al fine di potersi posizionare per afferrare un oggetto. Le coordinate e l'orientamento vengono calcolate da un'opportuna libreria (nel nostro caso dalla libreria \textit{Grasp Pose Generator, GPG}), la quale necessita delle informazioni dell'oggetto inquadrato sotto forma di una nuvola di punti, la point cloud, che verrà fornita attraverso la \textit{Stereo Camera ZED}. Il software del progetto sarà realizzato utilizzando il \textit{Framework STAR}. \par
+La \textit{Stereo Camera ZED} è dotata di vari sensori, per esempio l'accelereometro e il giroscopio, ma nella nostra applicazione serviranno solo i dati delle immagini, in particolare solo quelli della point cloud. La fotocamera stereoscopica ha un range di profondità compreso fra \SI{30}{c\meter} e \SI{20}{\meter} (fonte: \textcolor{blue}{\underline{\href{https://www.stereolabs.com/assets/datasheets/zed2-camera-datasheet.pdf}{datasheet}}}), perciò gli oggetti da inquadrare dovranno essere posizionati ad una distanza compresa in questo intervallo. \par
+Di seguito, nel capitolo \ref{librerie} verranno analizzate due diverse librerie che si possono utilizzare per ottenere i dati relativi alla posizione e all'orientamento della pinza del robot, mentre nel capitolo \ref{integrazione} verranno descritti i passi necessari per integrare, compilare ed eseguire il progetto. Infine, nel capitolo \ref{risultati} verranno mostrati i risultati finali.
 \newpage
 \chapter{Librerie}\label{librerie}
-Prima di costruire l'applicazione finale, sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator}, GPG, la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detector}, GPD, la cui documentazione è invece disponibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}.\par
-\todo{Per entrambe, riportare i comandi di compilazione ed esecuzione per ottenere la versione stand alone. Mettere i link, spiegare GPG e per GPD descrivere solo le differenze con la libreria precedente. Sempre per entrambe, alla fine mettere un'immagine con la visualizzazione delle prese e delle info date dal terminale. }
-\section{Grasp Pose Generator, GPG}\label{GPG}
-librerie necessarie al funzionamento
-\section{Grasp Pose Detector, GPD}\label{GPD}
+Prima di costruire l'applicazione finale (in cui è stata integrata soltanto la libreria GPG), sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator} (GPG), la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detection} (GPD), la cui documentazione è invece disponibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}.\par
+\section{Grasp Pose Generator (GPG)}\label{GPG}
+Questa libreria permette di individuare, data la point cloud di un oggetto contenuta in un file di tipo \textit{.pcd}, un certo numero di possibili pinze con cui il robot può afferrare l'oggetto stesso. Questo numero di pinze restituite in output viene definito dall'utente nel file di configurazione della libreria. \par
+Per poter eseguire la libreria, innanzitutto si deve scaricare lo zip della libreria da Github (\textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}) estraendone il contenuto, rinominandolo come \texttt{grasp\_candidates\_generator} e spostandolo in una directory scelta dall'utente. Poi vanno scaricate tutte le librerie che la libreria GPG richiede per il suo funzionamento, ovvero \textit{PCL} (necessaria per elaborare la point cloud), \textit{Eigen} (necessaria per eseguire operazioni con vettori e matrici) e \textit{VTK} (necessaria per la visualizzazione della point cloud), aprendo un nuovo terminale ed eseguendo in esso i comandi:
+\begin{verbatim}
+	sudo apt install libpcl-dev
+	sudo apt install libeigen3-dev
+	sudo apt-get install vtk6
+\end{verbatim}
+Ora si può procedere con l'esecuzione della libreria GPG. Per prima cosa si effettua la compilazione eseguendo nel precedente terminale i seguenti comandi:
+\begin{verbatim}
+	cd <location_of_your_workspace>  
+	cd grasp_candidates_generator
+	mkdir build && cd build
+	cmake ..
+	make
+	sudo make install
+\end{verbatim}
+Successivamente va eseguito anche il prossimo comando per l'esecuzione effettiva della libreria:
+\begin{verbatim}
+	./generate_candidates ../cfg/params.cfg ~/data/<point_cloud_name_file>.pdc
+\end{verbatim}
+In questo modo si visualizza a video la point cloud dell'oggetto in uno spazio tridimensionale, però per visualizzare anche le pinze individuate dalla libreria è necessario cliccare nella tastiera sul tasto Q. Per chiudere anche questa nuova finestra va premuto nuovamente il tasto Q.
+\todo{Mettere alla fine un'immagine con la visualizzazione delle prese e delle info date dal terminale}
+\section{Grasp Pose Detection (GPD)}\label{GPD}
+A differenza della libreria precedente, questa libreria restituisce in output soltanto le pinze individuate che hanno lo score maggiore rispetto a tutte quelle disponibili. Queste pinze vengono scelte in un numero definito sempre dall'utente nel file di configurazione della libreria. \par
+Per poter eseguire la libreria, innanzitutto si deve scaricare lo zip della libreria da Github (\textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}) estraendone il contenuto, rinominandolo come \texttt{gpd} e spostandolo in una directory scelta dall'utente. Poi vanno scaricate tutte le librerie che la libreria GPD richiede per il suo funzionamento, ovvero \textit{PCL} (necessaria per elaborare la point cloud), \textit{Eigen} (necessaria per eseguire operazioni con vettori e matrici), \textit{VTK} (necessaria per la visualizzazione della point cloud) e \textit{OpenCV} (necessaria per eseguire la detection delle pinze), aprendo un nuovo terminale ed eseguendo in esso i comandi:
+\begin{verbatim}
+	sudo apt install libpcl-dev
+	sudo apt install libeigen3-dev
+	sudo apt-get install vtk6
+	sudo apt install libopencv-dev
+\end{verbatim}
+Ora si può procedere con l'esecuzione della libreria GPD. Per prima cosa si effettua la compilazione eseguendo nel precedente terminale i seguenti comandi:
+\begin{verbatim}
+	cd <location_of_your_workspace> 
+	cd gpd
+	mkdir build && cd build
+	cmake ..
+	make -j
+	sudo make install
+\end{verbatim}
+Successivamente va eseguito anche il prossimo comando per l'esecuzione effettiva della libreria:
+\begin{verbatim}
+	./detect_grasps ../cfg/eigen_params.cfg ../tutorials/krylon.pdc
+\end{verbatim}
+Questo comando viene eseguito per la point cloud contenuta nel file \textit{krylon.pcd} fornito da esempio nella libreria, ma nel comando può essere inserito qualsiasi altro file di tipo \textit{.pcd}. \par
+In questo modo si visualizza a video la point cloud dell'oggetto in uno spazio tridimensionale, però per visualizzare anche le pinze individuate dalla libreria è necessario cliccare nella tastiera sul tasto Q. Le pinze visualizzate vengono distinte in base al loro colore secondo lo score che le caratterizza. Per chiudere anche questa nuova finestra va premuto nuovamente il tasto Q.
+\todo{Mettere alla fine un'immagine con la visualizzazione delle prese e delle info date dal terminale}
 
 \newpage
 \chapter{Integrazione}\label{integrazione}
-In questo capitolo, verranno descritti i passi seguiti per ottenere l'applicazione finale. Prima di utilizzare un nuovo terminale, è importante inizializzare le variabili d'ambiente di STAR. Per fare ciò, bisogna eseguire questi comandi nel terminale:
+In questo capitolo, verranno descritti i passi seguiti per ottenere l'applicazione finale. Innanzitutto è importante inizializzare le variabili d'ambiente di STAR in un nuovo terminale. Per fare ciò, bisogna eseguire questi comandi nel terminale:
 \begin{verbatim}
   cd STAR
   cd AutonomousRobots
@@ -156,11 +200,11 @@ Per prima cosa, andiamo a copiare e compilare la libreria GPG descritta nella se
   make
   sudo make install
 \end{verbatim}
-Per eseguire la libreria, digitare il comando seguente all'interno della cartella \texttt{build} e sostituire \texttt{some\_cloud} con il nome del file contenente la point cloud:
+Per eseguire la libreria, si deve digitare il comando seguente all'interno della cartella \texttt{build}:
 \begin{verbatim}
-  ./generate_candidates ../cfg/params.cfg ~/gpg/tutorials/some_cloud.pcd
+  ./generate_candidates ../cfg/params.cfg ~/gpg/tutorials/<point_cloud_name_file>.pcd
 \end{verbatim}
-La libreria appena importata funziona fornendogli in ingresso un file con estensione \texttt{.pcd} che contiene le informazioni sui punti della point cloud, però nel nostro caso la point cloud non sarà salvata su un file, ma verrà fornita dalla fotocamera stereoscopica. Modifichiamo quindi la libreria per fare in modo che riceva in ingresso non un file, ma una struttura dati denominata \texttt{Cloudcamera} che è un riferimento alla struttura dati \texttt{pcl::PointCloud$<$pcl::PointXYZRGBA$>$::Ptr}. Quest'ultima variabile è un vettore contenente dei punti nel formato XYZRGBA: ogni punto è caratterizzato da 4 campi, i primi tre (X, Y, e Z) sono di tipo double e contengono le informazioni relative alle coordinate di quel punto in metri, invece l'ultimo campo, RGBA, è un intero senza segno a 32 bit in cui si codifica l'informazione sul colore, ogni parametro del colore (R, G, B e A) è memorizzato in 8 bit, questo significa che ognuno di questi valori può variare da 0 a 255, perciò possono essere rappresentati fino a $\displaystyle{2^{32}=4.294.967.296}$ colori. Nello specifico, gli 8 bit meno significativi contengono l'informazione relativa al colore blu (B), i bit da 9 a 16 contengono l'informazione del colore verde (G), i bit da 17 a 24 codificano il valore del rosso (R), infine i bit da 25 a 32 contengono l'informazione del parametro alfa (A), che indica la trasparenza del colore. Nella nostra applicazione non utilizzeremo quest'informazione perché la point cloud è formata solo da punti di colore nero, che viene codificato dal valore più basso, ovvero 0. Per ottenere la modifica appena descritta, cambiamo il parametro della funzione \texttt{CandidatesGenerator::generateGraspCan-}\\\texttt{didates}, che non sarà più una stringa contenente il percorso del file, ma una varibalie di tipo \texttt{const CloudCamera\&}. \par
+La libreria appena importata funziona fornendogli in ingresso un file con estensione \texttt{.pcd} che contiene le informazioni sui punti della point cloud, però nel nostro caso la point cloud non sarà salvata su un file, ma verrà fornita dalla fotocamera stereoscopica. Modifichiamo quindi la libreria per fare in modo che riceva in ingresso non un file, ma una struttura dati denominata \texttt{CloudCamera} che è un riferimento alla struttura dati \texttt{pcl::PointCloud$<$pcl::PointXYZRGBA$>$::Ptr}. Quest'ultima variabile è un vettore contenente dei punti nel formato XYZRGBA: ogni punto è caratterizzato da 4 campi, i primi tre (X, Y, e Z) sono di tipo double e contengono le informazioni relative alle coordinate di quel punto in metri, invece l'ultimo campo, RGBA, è un intero senza segno a 32 bit in cui si codifica l'informazione sul colore. Ogni parametro del colore (R, G, B e A) è memorizzato in 8 bit e questo significa che ognuno di questi valori può variare da 0 a 255, perciò possono essere rappresentati fino a $\displaystyle{2^{32}=4.294.967.296}$ colori. Nello specifico, gli 8 bit meno significativi contengono l'informazione relativa al colore blu (B), i bit da 9 a 16 contengono l'informazione del colore verde (G), i bit da 17 a 24 codificano il valore del rosso (R), infine i bit da 25 a 32 contengono l'informazione del parametro alfa (A), che indica la trasparenza del colore. Nella nostra applicazione non utilizzeremo quest'informazione perché la point cloud è formata solo da punti di colore nero, che viene codificato dal valore più basso, ovvero 0. Per ottenere la modifica appena descritta, cambiamo il parametro della funzione \texttt{CandidatesGenerator::generateGraspCan-}\\\texttt{didates}, che non sarà più una stringa contenente il percorso del file, ma una varibalie di tipo \texttt{const CloudCamera\&}. \par
 La seconda modifica che apportiamo riguarda il tipo restituito dalla funzione \texttt{CandidatesGenerator-}\\\texttt{::generateGraspCandidates}, perché non sarà più di tipo \texttt{std::vector<Grasp>} ma \texttt{void}. Il vettore delle prese viene aggiornato passando alla funzione l'indirizzo della variabile da aggiornare, perciò la funzione di partenza avrà un parametro aggiuntivo. \par 
 A seguito di queste due modifiche, la segnatura della funzione \texttt{CandidatesGenerator::generate-}\\\texttt{GraspCandidates} è:
 \begin{verbatim}
@@ -190,32 +234,47 @@ Quest'ultimo file, \texttt{PluginArmGraspGCG.cpp} è stato ottenuto copiando e m
   LIB_NAME       = arm_grasp_gcg
   LIB_SRC        = PluginArmGraspGCG.cpp
 \end{verbatim} 
-Successivamente, vanno specificati i nomi ed i percorsi delle librerie necessarie affinché il plugin funzioni correttamente. Le dipendenze sono quelle indicate nella sezione \ref{GPG}, perciò specifichiamo il percorso delle librerie \textit{Eigen, OpenCV, VTK} e \textit{PCL}. \par
+Successivamente, vanno specificati i nomi ed i percorsi delle librerie necessarie affinché il plugin funzioni correttamente. Le dipendenze sono quelle indicate nella sezione \ref{GPG}, perciò specifichiamo il percorso delle librerie \textit{PCL}, \textit{Eigen} e \textit{VTK}. \par
 Per quanto riguarda il file di configurazione (\texttt{arm\_grasp\_gcg.cfg}), i parametri di nostro interesse sono:
 \begin{itemize}
 \item \texttt{finger\_width}: spessore delle dita della pinza utilizzata;
 \item \texttt{hand\_outer\_diameter}: diametro della pinza, calcolato come somma fra la massima apertura della pinza e due volte lo spessore delle dita;
 \item \texttt{hand\_depth}: lunghezza delle dita della pinza;
 \item \texttt{hand\_height}: spessore (inteso come profondità) della pinza;
-\item \texttt{voxelize}: variabile booleana, è \texttt{true} se si vuole che i punti della point cloud vengano voxelizati al fine di ridurne il numero, vale \texttt{false} altrimenti;
-\item \texttt{remove\_outliers}: variabile booleana utilizzata per indicare se si vogliono tenere tutti i valori (in questo caso il suo valore è \texttt{false}) oppure se si voglio scartare quelli statisticamente lontani, al fine di ridurre il rumore della point cloud (in quest'altro caso il valore della variabile è \texttt{false});
-\item \texttt{num\_samples}: numero di campioni, ovvero di prese, che si vogliono tenere in considerazione. Nel caso in cui si è interessati ad una sola prese il suo valore è 1, altrimenti è un intero maggiore.
+\item \texttt{voxelize}: variabile booleana che è \texttt{true} se si vuole che i punti della point cloud vengano voxelizati al fine di ridurne il numero, vale \texttt{false} altrimenti;
+\item \texttt{remove\_outliers}: variabile booleana utilizzata per indicare se si vogliono tenere tutti i valori (in questo caso il suo valore è \texttt{false}) oppure se si voglio scartare quelli statisticamente lontani al fine di ridurre il rumore della point cloud (in quest'altro caso il valore della variabile è \texttt{true});
+\item \texttt{num\_samples}: numero di campioni, ovvero di prese, che si vogliono tenere in considerazione. Nel caso in cui si è interessati ad una sola presa il suo valore è 1, altrimenti è un intero maggiore di 1.
 \end{itemize}
-Infine, va creata un'interfaccia all'interno della cartella \texttt{Functionalities} in cui richiamiamo la funzione della libreria. Quest'interfaccia va creata nel percorso \texttt{Functionalities/interfaces/star/robo-}\\\texttt{tics/functionality}, contiene gli \texttt{include} necessari e una funzione virtuale che richiama la libreria. La sua segnatura è la seguente:
+Infine, va creata un'interfaccia all'interno della cartella \texttt{Functionalities} in cui richiamiamo la funzione della libreria. Quest'interfaccia va creata nel percorso \texttt{Functionalities/interfaces/star/robo-}\\\texttt{tics/functionality} e contiene gli \texttt{include} necessari e una funzione virtual che richiama la libreria. La sua segnatura è la seguente:
 \begin{verbatim}
   virtual void generateGraspCandidates(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud-
   Prova, std::vector<Grasp>\& prese) = 0;}
 \end{verbatim} 
-Dopo aver costruito il plugin, è necessario compilarlo, eseguento le seguenti istruzioni:
+Dopo aver costruito il plugin, è necessario compilarlo, eseguendo le seguenti istruzioni:
 \begin{verbatim}
   cd STAR/AutonomousRobots/Functionalities/plugin/ arm_grasp_gcg
   make
 \end{verbatim} 
 Il plugin va ricompilato ogni volta che viene modificato. 
 \section{Components}
-Abbiamo creato due diversi ATTIVITA' [sistema terminologia], il componente che si occupa dell'utilizzo della libreria e della pubblicazione dei messaggi contenenti le informazioni sulla presa è \texttt{ObjectDetection}, mentre il componente \texttt{ImageVisualization} si limita a ricevere e stampare sul terminale il messaggio ricevuto dal primo componente.
+Abbiamo creato due diverse attività: \texttt{ObjectDetection} si occupa dell'utilizzo della libreria GPG e della pubblicazione di messaggi contenenti le informazioni sulla presa, mentre \texttt{ObjectVisualization} si limita a ricevere e a stampare sul terminale il messaggio ricevuto dalla prima attività.
+\todo{attività sono ObjectDetection e ObjectVisualization, mentre componente è CameraZedServer}
 \section{Messages}
-3 messaggi creati con vari campi.
+Per quanto riguarda i messaggi, per la nostra applicazione è risultato necessario utilizzare i messaggi di tipo \texttt{manipulation\_msgs} disponibili nella cartella \textit{Messages} di STAR e in particolare abbiamo dovuto introdurre nel file \texttt{manipulation\_msgs.idl} una nuova tipologia di struttura dati denominata \texttt{GraspCandidates}. Questa struttura consente di contenere al suo interno le possibili pinze individuate dalla libreria GPG ed è composta a sua volta da un campo corrispondente a una sequenza di oggetti di tipo \texttt{GraspPose}. Questa è un'ulteriore struttura dati che abbiamo creato in modo da rappresentare la singola pinza ed è costituita da tre campi di tipo \textit{Transform3D}, che a sua volta è una nuova struttura dati introdotta che serve per rappresentare la traslazione e la rotazione della pinza. Questi tre campi si distinguono in base al tipo di traslazione individuata:
+\begin{itemize}
+	\item \texttt{coord\_bottom}, che riguarda la traslazione rispetto alla posizione centrata sulla base della pinza del robot;
+	\item \texttt{coord\_top}, che riguarda la traslazione rispetto alla posizione centrata sulle estremità delle dita della pinza del robot;
+	\item \texttt{coord\_surface}, che riguarda la traslazione rispetto alla posizione centrata sulla superficie dell'oggetto.
+\end{itemize}
+\textit{Transform3D} è formata da 7 campi di tipo double, di cui i primi tre permettono di rappresentare le traslazioni (x, y e z), mentre gli ultimi quattro rappresentano le rotazioni espresse sotto forma di quaternioni (x, y, z e w). \par
+Una volta apportate le precedenti modifiche al file \texttt{manipulation\_msgs.idl}, è necessario ricompilare i messaggi tramite i seguenti comandi in un nuovo terminale:
+\begin{verbatim}
+	cd STAR/AutonomousRobots
+	. env-star.sh
+	cd Messages
+	. compile.sh
+\end{verbatim}
+Questa compilazione va eseguita tutte le volte che si modificano i messaggi.
 
 \newpage
 \chapter{Risultati}\label{risultati}

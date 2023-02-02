@@ -153,10 +153,16 @@ Successivamente va eseguito anche il prossimo comando per l'esecuzione effettiva
 \begin{verbatim}
   ./generate_candidates ../cfg/params.cfg ~/data/<point_cloud_name_file>.pdc
 \end{verbatim}
-In questo modo si visualizza a video un disegno in cui vengono visualizzati i vettori normali alla superficie inquadrata, però per visualizzare la point cloud dell'oggetto in uno spazio tridimensionale con le pinze individuate dalla libreria è necessario cliccare nella tastiera sul tasto Q. Per chiudere anche questa nuova finestra va premuto nuovamente il tasto Q. Per entrambe le finestre, per cambiare lo zoom bisogna usare lo scroller del mouse, per muoversi sulla point cloud bisogna invece trascinare con il cursore. 
-\todo{Mettere alla fine un'immagine con la visualizzazione delle prese e delle info date dal terminale}
+In questo modo si visualizza a video un disegno in cui vengono visualizzati i vettori normali alla superficie inquadrata, però per visualizzare la point cloud dell'oggetto in uno spazio tridimensionale con le pinze individuate dalla libreria è necessario cliccare nella tastiera sul tasto Q. Per chiudere anche questa nuova finestra va premuto nuovamente il tasto Q. Per entrambe le finestre, per cambiare lo zoom bisogna usare lo scroller del mouse, per muoversi sulla point cloud bisogna invece trascinare con il cursore. Nella figura \ref{figura:imggpg} sono riportate le due immagini. 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[height=5.5cm]{immagini/gpg1}
+	\includegraphics[height=5.5cm]{immagini/gpg2}
+	\caption{Vettori normali alla superficie (a sinistra) e point cloud con sei possibili prese (a destra).}
+	\label{figura:imggpg}
+\end{figure}
 \section{Grasp Pose Detection (GPD)}\label{GPD}
-A differenza della libreria precedente, in questa libreria è integrato anche un classificatore per riconoscere gli oggetti afferrabili. La libreria GPD restituisce in output le pinze individuate, analogamente alla libreria GPG, ma per ogni presa viene specificato anche il suo score, che nell'immagine viene reso utilizzando dei diversi colori (verde per le pinze con score maggiore, che sono quelle corrette; giallo e arancione per quelle di score intermedio, che sono le prese accettabili; rosso per quelle con score basso, che sono da considerarsi non accettabili). Anche per questa libreria il numero delle pinze è definito dall'utente nel file di configurazione. \par
+La libreria \textit{Grasp Pose Detection} è l'evoluzione della libreria \textit{Grasp Pose Generator} appena descritta. A differenza della libreria precedente, in questa libreria è integrato anche un classificatore per riconoscere gli oggetti afferrabili. La libreria GPD restituisce in output le pinze individuate, analogamente alla libreria GPG, ma per ogni presa viene specificato anche il suo score, che nell'immagine viene reso utilizzando dei diversi colori (verde per le pinze con score maggiore, che sono quelle corrette; giallo e arancione per quelle di score intermedio, che sono le prese accettabili; rosso per quelle con score basso, che sono da considerarsi non accettabili). Anche per questa libreria il numero delle pinze è definito dall'utente nel file di configurazione. \par
 Per poter eseguire la libreria, innanzitutto si deve scaricare lo zip della libreria da Github (\textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}) estraendone il contenuto, rinominandolo come \texttt{gpd} e spostandolo in una directory scelta dall'utente. Poi vanno scaricate tutte le librerie che la libreria GPD richiede per il suo funzionamento, ovvero \textit{PCL} (necessaria per elaborare la point cloud), \textit{Eigen} (necessaria per eseguire operazioni con vettori e matrici), \textit{VTK} (necessaria per la visualizzazione della point cloud) e \textit{OpenCV} (necessaria per eseguire la detection delle pinze), aprendo un nuovo terminale ed eseguendo in esso i comandi:
 \begin{verbatim}
   sudo apt install libpcl-dev
@@ -178,9 +184,21 @@ Successivamente va eseguito anche il prossimo comando per l'esecuzione effettiva
   ./detect_grasps ../cfg/eigen_params.cfg ../tutorials/krylon.pdc
 \end{verbatim}
 Questo comando viene eseguito sulla point cloud contenuta nel file \texttt{krylon.pcd} fornito da esempio nella libreria, ma nel comando può essere inserito qualsiasi altro file di tipo \texttt{.pcd}. \par
-In questo modo si visualizzano a video i vettori normali alla superficie della point cloud in uno spazio tridimensionale, però per visualizzare anche le pinze individuate dalla libreria è necessario cliccare nella tastiera sul tasto Q. Per vedere il numero scelto di pinze migliori, che  vengono distinte in base al loro colore secondo lo score che le caratterizza, è necessario premere di nuovo il tasto Q. Per chiudere anche questa nuova finestra va premuto nuovamente il tasto Q.
-\todo{Mettere alla fine un'immagine con la visualizzazione delle prese e delle info date dal terminale}
-
+In questo modo si visualizzano a video i vettori normali alla superficie della point cloud in uno spazio tridimensionale, però per visualizzare anche le pinze individuate dalla libreria è necessario cliccare nella tastiera sul tasto Q. Per vedere il numero scelto di pinze migliori, che  vengono distinte in base al loro colore secondo lo score che le caratterizza, è necessario premere di nuovo il tasto Q. Per chiudere anche questa nuova finestra va premuto nuovamente il tasto Q. Le immagini descritte sono riportate in figura \ref{figura:imggpd}, invece le informazioni sullo score mostrate a terminale si trovano in figura \ref{figura:imggpdt}.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[height=5.4cm]{immagini/gpd1}
+	\includegraphics[height=5.4cm]{immagini/gpd2}
+	\includegraphics[height=5.4cm]{immagini/gpd3}
+	\caption{Vettori normali alla superficie (a sinistra), point cloud con le possibili prese (al centro) e point cloud con le cinque migliori prese (a destra).}
+	\label{figura:imggpd}
+\end{figure}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth]{immagini/gpd4}
+	\caption{Informazioni mostrate a terminale, quelle relative allo score si trovano nel riquadro evidenziato.}
+	\label{figura:imggpdt}
+\end{figure}
 \newpage
 \chapter{Integrazione}\label{integrazione}
 In questo capitolo, verranno descritti i passi seguiti per ottenere l'applicazione finale. Innanzitutto è importante inizializzare le variabili d'ambiente di STAR in un nuovo terminale. Per fare ciò, bisogna eseguire questi comandi nel terminale:
@@ -257,9 +275,37 @@ Dopo aver costruito il plugin, è necessario compilarlo, eseguendo le seguenti i
 \end{verbatim} 
 Il plugin va ricompilato ogni volta che viene modificato. 
 \section{Components}
-Abbiamo creato due diverse attività: \texttt{ObjectDetection} si occupa dell'utilizzo della libreria GPG e della pubblicazione di messaggi contenenti le informazioni sulla presa, mentre \texttt{ObjectVisualization} si limita a ricevere e a stampare sul terminale il messaggio ricevuto dalla prima attività.
-\todo{attività sono ObjectDetection e ObjectVisualization, mentre componente è CameraZedServer}
-\section{Messages}
+Per la nostra applicazione utilizzeremo il componente \texttt{CameraZedServer}, che si trova all'interno della cartella \texttt{Components} di STAR. In questo componente troviamo quattro diverse cartelle: in \texttt{bin} troviamo i file di log e gli script per compilare ed eseguire il componente; all'interno di \texttt{cfg} troviamo un file in formato XML che contiene le informazioni relative alle attività, ad esempio di quali topic sono publisher o subscriber ed il dominio sul quale si scambiano eventuali messaggi; infine \texttt{src} contiene i file \texttt{.cpp} e \texttt{.hpp} delle diverse attvità del componente. \par
+\noindent Le attività di nostro interesse sono elencate di seguito:
+\begin{itemize}
+\item \texttt{CameraZedServer}: è l'attività che ha il compito di inizializzare il componente STAR;
+\item \texttt{ImageGrabbing}: attività che ha il compito di salvare le immagini provenienti dalla fotocamera stereoscopica in uno slot del CAB (Circular Asynchronous Buffer);
+\item \texttt{ImageVisualization}: è l'attività che consuma lo slot dell'attività precedente, il suo compito è quello di visualizzare tutte le immagini fornite dalla fotocamera;
+\item \texttt{ObjectDetection}: attività creata da noi, il suo compito è quello di richiamare il plugin arm\_grasp\_gcg per fornire le coordinate delle prese tramite un messaggio, verrà descritta dettagliatamente in seguito;
+\item \texttt{ObjectVisualization}: attività creata da noi, ha il compito di stampare sul terminale le coordinate delle prese che riceve tramite messaggio dal componente precedente.
+\end{itemize}
+Nel file di configurazione abbiamo aggiunto le due attività create, in particolare per l'attività \texttt{ObjectDe-}\\\texttt{tection} è stata inserita anche la chiamata al plugin ed è stato abilitato il log su disco, questo ci servira durante la progettazione del codice a scopo di debug. \par
+Prima di procedere, è necessario conoscere il sistema di riferimento adottato dalla telecamera, così da capire il significato, in termini di coordinate, dei dati che ci restituirà con la point cloud. La Stereo Camera ZED mette a disposizione dell'utente sei diversi sistemi di riferimento, che sono mostrati in figura \ref{figura:sdrZED}. Noi abbiamo scelto il primo, perciò le informazioni relative alla distanza dell'oggetto saranno date dalla coordinata X. 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[height=6cm]{immagini/CoordinateSystem}
+	\caption{Sistemi di rifermento messi a disposizione dalla nostra fotocamera stereoscopica.}
+	\label{figura:sdrZED}
+\end{figure}
+\\Di seguito, analizziamo la struttura del file relativo all'attività \texttt{ObjectDetection}. Le prime due funzioni dell'attività sono il costruttore e il distruttore della classe, mentre la terza funzione è la callback relativa alla connessione. La callback relativa alle informazioni delle fotocamera, invece, è organizzata nel seguente modo: 
+\begin{itemize}
+\item \textit{Acquisizione delle immagini dallo slot del CAB}: nella nostra applicazione serve solo la point cloud, che viene memorizzata in una struttra dati di tipo \texttt{cv::Mat};
+\item \textit{Rilascio dello slot del CAB appena utilizzato}: in seguito al salvataggio della point cloud, possiamo rilasciare lo slot del CAB per renderlo nuovamente disponibile a contenere nuovi dati;
+\item \textit{Impostazione delle soglie}: è \textbf{facoltativa}. Dal momento che questa libreria è sprovvista del classificatore, le soglie servono per individuare l'oggetto da afferrare in uno scenario complesso. A queste variabili, bisogna assegnargli il valore massimo e minimo, espresso in metri e rispetto al sistema di riferimento della telecamera, della regione di spazio in cui può trovarsi l'oggetto;
+\item \textit{Conversione del formato dei dati della point cloud}: è un passaggio necessario, dal momento che i dati della telecamera sono memorizzati in una matrice \texttt{cv::Mat}, mentre la nostra libreria richiede in ingresso una struttura dati della libreria \textit{PCL} (\texttt{pcl::PointCloud<pcl::PointXYZRGBA>::Ptr}). Per effettuare questa conversione, copiamo il contenuto di ogni cella della prima variabile, che sono un insieme di quattro \texttt{double}, nel corrispondente campo della variabile di tipo \texttt{pcl::PointXYZ-}\\\texttt{RGBA}, quindi effettuiamo il \textit{push back} di quest'ultima variabile nella struttra dati della libreria \textit{PCL} di nostro interesse. Il punto in esame viene inserito solo se tutti i campi della cella di partenza non sono \texttt{NaN}, altrimenti non avrebbe significato;
+\item \textit{Estrazione dei soli punti appartenenti all'oggetto}: è \textbf{facoltativa}. Quest'elaborazione serve solo in scenari complessi ed utilizza le soglie impostate in precedenza. Il vettore dei punti costruito al punto precedente viene scandito interamente, così che nella nuova struttura dati relativa alla point cloud siano contenuti solo i punti che costituiscono l'oggetto da afferare;
+\item \textit{Conversione della point cloud ed estrazione dei soli punti appartenenti all'oggetto}: è \textbf{facoltativa}. In questa funzione vengono eseguiti simultaneamente gli ultimi due punti appena descritti, è stata creata solo per motivi di ottimizzazione temporale. Infatti, l'estrazione di determinati punti richiede di scandire completamente il vettore dei punti, e visto che questo è cosituito all'incirca da 100.000 elementi, la scansione risulta essere troppo onerosa in termini di tempo, quindi si è scelto di creare anche una versione che svolge allo stesso tempo entrambe le elaborazioni. L'utente finale può utilizzare la versione che preferisce e commentare quella che non intende utilizzare;
+\item \textit{Chiamata del plugin \texttt{arm\_grasp\_gcg}}: dopo che la point cloud è stata convertita nel formato richiesto ed elaborata come necessario per l'applicazione, può essere passata come parametro della funzione che richiama il plugin. Il nome della variabile è determinato dall'elaborazione che si è scelta di utilizzare;
+\item \textit{Salvataggio su log del vettore delle prese}: le prese ritornate dal plugin che richiama la libreria GPG vengono salvate sul log \texttt{ObjectDetection.log} nella cartella \texttt{bin}, in questo modo sono consultabili per analizzare i dati sulle prese ritornate dal plugin;
+\item \textit{Creazione di un messaggio contenente il vettore delle prese}: le prese ritornate dal plugin vengono memorizzate in un messaggio di tipo \texttt{GraspCandidates} (la cui descrizione dettagliata si trova nella sezione \ref{messages}), successivamente il messaggio viene pubblicato. Questo passaggio è utile nel caso in cui le informazioni sulle prese servono ad altre attività o componenti.
+\end{itemize}
+Ogni volta in cui si apportano delle modifiche ad un'attività, è necessario ricompilare il componente scrivendo \texttt{.~compile.sh} nel terminale. Invece, per eseguire un componente, bisogna scrivere \texttt{.~run.sh} nel terminale. In entrambi i casi, il comando va digitato all'interno della cartella \texttt{bin} del componente d'interesse.
+\section{Messages}\label{messages}
 Per quanto riguarda i messaggi, per la nostra applicazione è risultato necessario utilizzare i messaggi di tipo \texttt{manipulation\_msgs} disponibili nella cartella \texttt{Messages} di STAR e in particolare abbiamo dovuto introdurre nel file \texttt{manipulation\_msgs.idl} una nuova tipologia di struttura dati denominata \texttt{GraspCandidates}. Questa struttura consente di contenere al suo interno le possibili pinze individuate dalla libreria GPG ed è composta a sua volta da un campo corrispondente a una sequenza di oggetti di tipo \texttt{GraspPose}. Questa è un'ulteriore struttura dati che abbiamo creato in modo da rappresentare la singola pinza ed è costituita da tre campi di tipo \texttt{Transform3D}, che a sua volta è una nuova struttura dati introdotta che serve per rappresentare la traslazione e la rotazione della pinza. I tre campi della struttura \texttt{GraspPose} si distinguono in base al tipo di traslazione individuata:
 \begin{itemize}
 	\item \texttt{coord\_bottom}, che contiene le coordinate della traslazione fra il sistema di riferimento della telecamera e la posizione centrata sulla base della pinza del robot;
@@ -276,7 +322,21 @@ La compilazione va eseguita tutte le volte che si modificano i messaggi.
 
 \newpage
 \chapter{Risultati}\label{risultati}
-Immagini con prese, eventualmente anche quelle con integrazione robot.
+La libreria è stata testata inquadrando una bottiglietta posta ad una distanza di circa \SI{70}{c\meter} dalla fotocamera. Di seguito, si riportano la fotografia della scena inquadrata (figura \ref{figura:scenalab}) ed il grafico delle prese individuate (figura \ref{figura:preselab}). 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[height=6.9cm]{immagini/lab3}
+	\caption{Scena inquadrata con la fotocamera stereoscopica.}
+	\label{figura:scenalab}
+\end{figure}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[height=5.5cm]{immagini/lab1}
+	\includegraphics[height=5.5cm]{immagini/lab2}
+	\caption{Point cloud con le prese vista frontalmente (a sinistra) e dall'alto (a destra).}
+	\label{figura:preselab}
+\end{figure}
+\\Successivamente, le coordinate delle prese sono state utilizzate da un robot manipolatore a 6 gradi di libertà. In questo caso, nel file di configurazione del nostro componente è stato necessario cambiare il numero del dominio sul quale pubblichiamo il messaggio, per fare in modo che questo possa essere letto dal componente che gestisce il manipolatore. Di seguito, si riportano alcune immagini della simulazione.
 %----------------------------------------------------------------------------------------
 
 \end{document}

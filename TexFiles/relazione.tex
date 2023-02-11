@@ -131,7 +131,7 @@ La \textit{Stereo Camera ZED} è dotata di vari sensori, per esempio l'accelereo
 Di seguito, nel capitolo \ref{librerie} verranno analizzate due diverse librerie che si possono utilizzare per ottenere i dati relativi alla posizione e all'orientamento della pinza del robot, mentre nel capitolo \ref{integrazione} verranno descritti i passi necessari per integrare, compilare ed eseguire il progetto. Infine, nel capitolo \ref{risultati} verranno mostrati i risultati finali.
 \newpage
 \chapter{Librerie}\label{librerie}
-Prima di costruire l'applicazione finale (in cui è stata integrata soltanto la libreria GPG), sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator} (GPG), la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detection} (GPD), la cui documentazione è invece disponibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}.\par
+Prima di costruire l'applicazione finale (in cui è stata integrata soltanto la libreria GPG), sono state analizzate due diverse librerie \textit{stand-alone}, la \textit{Grasp Pose Generator} (GPG), la cui documentazione è reperibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}, e la \textit{Grasp Pose Detection} (GPD), la cui documentazione è invece disponibile al seguente \textcolor{blue}{\underline{\href{https://github.com/atenpas/gpd}{link}}}.\todo{scrivere anche link per sicurezza, non solo collegamento}\par
 \section{Grasp Pose Generator (GPG)}\label{GPG}
 Questa libreria permette di individuare, data la point cloud di un oggetto contenuta in un file di tipo \texttt{.pcd}, un certo numero di possibili pinze con cui il robot può afferrare l'oggetto stesso. Questo numero di pinze restituite in output viene definito dall'utente nel file di configurazione della libreria. \par
 Per poter eseguire la libreria, innanzitutto si deve scaricare lo zip della libreria da Github (\textcolor{blue}{\underline{\href{https://github.com/atenpas/gpg}{link}}}) estraendone il contenuto, rinominandolo come \texttt{grasp\_candidates\_generator} e spostandolo in una directory scelta dall'utente. Poi vanno scaricate tutte le librerie che la libreria GPG richiede per il suo funzionamento, ovvero \textit{PCL} (necessaria per elaborare la point cloud), \textit{Eigen} (necessaria per eseguire operazioni con vettori e matrici) e \textit{VTK} (necessaria per la visualizzazione della point cloud), aprendo un nuovo terminale ed eseguendo in esso i comandi:
@@ -302,7 +302,7 @@ Prima di procedere, è necessario conoscere il sistema di riferimento adottato d
 \item \textit{Conversione della point cloud ed estrazione dei soli punti appartenenti all'oggetto}: è \textbf{facoltativa}. In questa funzione vengono eseguiti simultaneamente gli ultimi due punti appena descritti, è stata creata solo per motivi di ottimizzazione temporale. Infatti, l'estrazione di determinati punti richiede di scandire completamente il vettore dei punti, e visto che questo è cosituito all'incirca da 100.000 elementi, la scansione risulta essere troppo onerosa in termini di tempo, quindi si è scelto di creare anche una versione che svolge allo stesso tempo entrambe le elaborazioni. L'utente finale può utilizzare la versione che preferisce e commentare quella che non intende utilizzare;
 \item \textit{Chiamata del plugin \texttt{arm\_grasp\_gcg}}: dopo che la point cloud è stata convertita nel formato richiesto ed elaborata come necessario per l'applicazione, può essere passata come parametro della funzione che richiama il plugin. Il nome della variabile è determinato dall'elaborazione che si è scelta di utilizzare;
 \item \textit{Salvataggio su log del vettore delle prese}: le prese ritornate dal plugin che richiama la libreria GPG vengono salvate sul log \texttt{ObjectDetection.log} nella cartella \texttt{bin}, in questo modo sono consultabili per analizzare i dati sulle prese ritornate dal plugin;
-\item \textit{Creazione di un messaggio contenente il vettore delle prese}: le prese ritornate dal plugin vengono memorizzate in un messaggio di tipo \texttt{GraspCandidates} (la cui descrizione dettagliata si trova nella sezione \ref{messages}), successivamente il messaggio viene pubblicato. Questo passaggio è utile nel caso in cui le informazioni sulle prese servono ad altre attività o componenti.
+\item \textit{Creazione di un messaggio contenente il vettore delle prese}: le prese ritornate dal plugin vengono memorizzate in un messaggio di tipo \texttt{GraspCandidates} (la cui descrizione dettagliata si trova nella sezione \ref{messages}), successivamente il messaggio viene pubblicato. Questo passaggio è utile nel caso in cui le informazioni sulle prese servono ad altre attività o componenti. \todo{Aggiungere questione angoli}
 \end{itemize}
 Ogni volta in cui si apportano delle modifiche ad un'attività, è necessario ricompilare il componente scrivendo \texttt{.~compile.sh} nel terminale. Invece, per eseguire un componente, bisogna scrivere \texttt{.~run.sh} nel terminale. In entrambi i casi, il comando va digitato all'interno della cartella \texttt{bin} del componente d'interesse.
 \section{Messages}\label{messages}
@@ -336,7 +336,19 @@ La libreria è stata testata inquadrando una bottiglietta posta ad una distanza 
 	\caption{Point cloud con le prese vista frontalmente (a sinistra) e dall'alto (a destra).}
 	\label{figura:preselab}
 \end{figure}
-\\Successivamente, le coordinate delle prese sono state utilizzate da un robot manipolatore a 6 gradi di libertà. In questo caso, nel file di configurazione del nostro componente è stato necessario cambiare il numero del dominio sul quale pubblichiamo il messaggio, per fare in modo che questo possa essere letto dal componente che gestisce il manipolatore. Di seguito, si riportano alcune immagini della simulazione.
+\\Successivamente, le coordinate delle prese sono state utilizzate da un robot manipolatore a 6 gradi di libertà. In questo caso, nel file di configurazione del nostro componente è stato necessario cambiare il numero del dominio sul quale pubblichiamo il messaggio, per fare in modo che questo possa essere letto dal componente che gestisce il manipolatore. Inoltre, per semplicità di utilizzo, il nostro progetto è stato integrato in quello del manipolatore, così che si potessere gestire da un unico computer i due componenti. Di seguito, si riportano alcune immagini dello scenario in cui è stata testata la fotocamera stereoscopica.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth]{immagini/manipAlto}
+	\caption{Fotografia della scena vista dall'alto.}
+	\label{figura:manipAlto}
+\end{figure}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth]{immagini/manipDavanti1}
+	\caption{Fotografia della scena vista lateralmente.}
+	\label{figura:manipDavanti}
+\end{figure}
 %----------------------------------------------------------------------------------------
 
 \end{document}
